@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+		<style>
+			*{
+				margin: 0;
+				padding: 0;
+			}
+			
+			#box{
+				width: 200px;
+				height: 200px;
+				background-color: red;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="box">
+			
+		</div>
+	</body>
+	
+	<script src="js/transform.js"></script>
+	
+	<script>
+		
+		
+//封装通用的多指事件函数
+	var startRotate = 0;
+	var startScale = 1;
+	var callback = {
+		//真真正正被操作的元素多指事件的效果
+		start:function(){
+			//获取元素本身存在的scale值，因为下一次缩放要在这个基础上进行缩放
+			startRotate = transformCss(box,'rotate');
+			startScale = transformCss(box,'scale');
+		},
+		change:function(ev){
+			//在原有的基础上去设置我们的缩放比例。两个值是相乘的关系
+			transformCss(box,'rotate',startRotate + ev.rotate);
+			transformCss(box,'scale',startScale * ev.scale);
+		},
+		end:function(){
+			box.innerHTML = '';
+		}
+	}
+
+	gesture(box,callback);
+	
+	function gesture(node,callback){
+		var isStart = false;
+		var startD = 0;
+		var startC = 0;
+		node.addEventListener('touchstart',function(event){
+			var touch = event.touches;
+			if(touch.length >= 2){
+				isStart = true;
+				//俩根手指初始的角度
+				startD= getD(touch[0],touch[1]);
+				//俩根手指的初始距离差
+				startC = getC(touch[0],touch[1]);
+				
+				
+				if(callback && typeof callback['start'] == 'function'){
+					callback['start']();
+				}
+			}
+		});
+		
+		node.addEventListener('touchmove',function(event){
+			var touch = event.touches;
+			if(touch.length >= 2){
+				
+				//拿到两根手指的角度D
+				var endD = getD(touch[0],touch[1]);
+				//拿到结束的角度 - 开始的角度
+				var deg = endD - startD;
+				
+				//拿到两根手机的距离差
+				var endC = getC(touch[0],touch[1]);
+				var scale = endC / startC;
+				
+				event.rotate = deg;
+				event.scale = scale;
+				
+				
+				if(callback && typeof callback['change'] == 'function'){
+					callback['change'](event);
+				}
+			}
+		});
+		
+		node.addEventListener('touchend',function(event){
+			var touch = event.touches;
+			if(isStart && touch.length < 2){
+				if(callback && typeof callback['end'] == 'function'){
+					callback['end']();
+				}
+			}
+		});
+	}
+	
+	
+	function getD(p1,p2){
+		var disX = p1.clientX - p2.clientX;
+		var disY = p1.clientY - p2.clientY; 
+		//特别强调，三角函数有关的全是弧度
+		var radia = Math.atan2(disY,disX);
+		//弧度转角度
+//		180 / pi     ? / radia
+		var deg = 180 * radia / Math.PI;
+		
+		return deg;
+	}
+		
+	function getC(p1,p2){
+		var disX = p1.clientX - p2.clientX;
+		var disY = p1.clientY - p2.clientY;       
+		var disC = Math.sqrt(disX * disX + disY * disY);
+		return disC;
+	}
+		
+
+	</script>
+</html>

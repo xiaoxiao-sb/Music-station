@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+		<style>
+			*{
+				margin: 0;
+				padding: 0;
+			}
+			
+			#box{
+				width: 200px;
+				height: 200px;
+				background-color: red;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="box">
+			
+		</div>
+	</body>
+	<script>
+		
+		//这个事件只能被ios系统识别，安卓看不懂
+		
+		var box = document.getElementById('box');
+//		box.addEventListener('gesturestart',function(){
+//			box.style.backgroundColor = 'green';
+//		})
+//		
+//		box.addEventListener('gesturechange',function(){
+//			box.innerHTML = 'box<br>';
+//		})
+//		
+//		box.addEventListener('gestureend',function(){
+//			box.innerHTML = '';
+//		})
+
+
+//模拟通用的多指事件
+		var isStart = false;
+
+		box.addEventListener('touchstart',function(event){
+			var touch = event.touches;
+			if(touch.length >= 2){
+				isStart = true;
+				box.style.backgroundColor = 'green';
+			}
+		});
+		
+		box.addEventListener('touchmove',function(event){
+			var touch = event.touches;
+			if(touch.length >= 2){
+				box.innerHTML = 'box<br>';
+			}
+		});
+		
+		box.addEventListener('touchend',function(event){
+			var touch = event.touches;
+			if(isStart && touch.length < 2){
+				box.innerHTML = '';
+			}
+		});
+		
+//封装通用的多指事件函数	
+	var callback = {
+		//真真正正被操作的元素多指事件的效果
+		start:function(){
+			box.style.backgroundColor = 'green';
+		},
+		change:function(){
+			box.innerHTML = 'box<br>';
+		},
+		end:function(){
+			box.innerHTML = '';
+		}
+	}
+
+	gesture(box,callback);
+	
+	function gesture(node,callback){
+		var isStart = false;
+		node.addEventListener('touchstart',function(event){
+			var touch = event.touches;
+			if(touch.length >= 2){
+				isStart = true;
+				if(callback && typeof callback['start'] == 'function'){
+					callback['start']();
+				}
+			}
+		});
+		
+		node.addEventListener('touchmove',function(event){
+			var touch = event.touches;
+			if(touch.length >= 2){
+				if(callback && typeof callback['change'] == 'function'){
+					callback['change']();
+				}
+			}
+		});
+		
+		node.addEventListener('touchend',function(event){
+			var touch = event.touches;
+			if(isStart && touch.length < 2){
+				if(callback && typeof callback['end'] == 'function'){
+					callback['end']();
+				}
+			}
+		});
+	}
+		
+		
+		
+
+	</script>
+</html>
